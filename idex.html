@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 Plant Manager</title>
+  <style>
+    body { font-family: Arial; margin: 30px; background: #f2fff2; }
+    h1 { color: green; }
+    input, button { padding: 8px; margin: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #a8e6a1; }
+  </style>
+</head>
+<body>
+  <h1>🌿 Plant Manager</h1>
+  <h3>Add a New Plant</h3>
+  <input id="name" placeholder="Plant Name" />
+  <input id="type" placeholder="Plant Type" />
+  <input id="price" placeholder="Price" type="number" />
+  <button onclick="addPlant()">Add Plant</button>
+
+  <h3>All Plants</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Price</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="plantList"></tbody>
+  </table>
+
+  <script>
+    const API_URL = "http://localhost:5000/plants";
+
+    async function loadPlants() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const list = document.getElementById("plantList");
+      list.innerHTML = "";
+      data.forEach((p) => {
+        list.innerHTML += `
+          <tr>
+            <td>${p.name}</td>
+            <td>${p.type}</td>
+            <td>₹${p.price}</td>
+            <td>
+              <button onclick="deletePlant('${p._id}')">Delete</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    async function addPlant() {
+      const name = document.getElementById("name").value;
+      const type = document.getElementById("type").value;
+      const price = document.getElementById("price").value;
+      if (!name || !type || !price) return alert("Please fill all fields");
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, type, price }),
+      });
+      loadPlants();
+      document.getElementById("name").value = "";
+      document.getElementById("type").value = "";
+      document.getElementById("price").value = "";
+    }
+
+    async function deletePlant(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      loadPlants();
+    }
+
+    loadPlants();
+  </script>
+</body>
+</html>
