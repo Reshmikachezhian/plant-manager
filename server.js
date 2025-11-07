@@ -1,49 +1,23 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const path = require("path");
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config(); // Loads environment variables
 
 const app = express();
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware
+app.use(express.json());
 
-// ✅ MongoDB Atlas connection (update your own URI below)
-mongoose.connect("mongodb+srv://admin:admin123@cluster0.xxxxx.mongodb.net/plant-manager")
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch(err => console.error(err));
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ✅ Schema + Model
-const plantSchema = new mongoose.Schema({
-  name: String,
-  type: String,
-  price: Number,
-});
-const Plant = mongoose.model("Plant", plantSchema);
-
-// ✅ API Routes
-app.get("/api/plants", async (req, res) => {
-  const plants = await Plant.find();
-  res.json(plants);
-});
-
-app.post("/api/plants", async (req, res) => {
-  const plant = new Plant(req.body);
-  await plant.save();
-  res.status(201).json(plant);
-});
-
-app.delete("/api/plants/:id", async (req, res) => {
-  await Plant.findByIdAndDelete(req.params.id);
-  res.json({ message: "Plant deleted successfully" });
-});
-
-// ✅ Serve frontend (index.html)
-app.use(express.static(path.join(__dirname)));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+// Example route
+app.get("/", (req, res) => {
+  res.send("Plant Manager API is running 🌱");
 });
 
 const PORT = process.env.PORT || 5000;
